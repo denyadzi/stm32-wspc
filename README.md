@@ -7,7 +7,7 @@ So to create a project you should do the following:
 * create a project folder under src directory
 * create a Makefile inside that folder
 * create own project stm32f4xx_conf.h file and make necessary configurations there
-* create & include your own or library sources withing project's Makefile
+* create & include your own or library sources within project's Makefile
 
 Project Makefile
 ---
@@ -34,4 +34,4 @@ Just include ```#include "stm32f4_discovery.h"``` in your source, configure proj
 Please refer to hello_world project for more details
 
 
-Feel free to make any changes to this workspace corresponing your needs.
+Feel free to make any changes to this workspace corresponding your needs.
