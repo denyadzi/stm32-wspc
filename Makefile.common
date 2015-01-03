@@ -1,0 +1,51 @@
+WORKSPACE_ROOT_RELATIVE_TO_PROJECT=../..
+STM_LIB_DIR=$(WORKSPACE_ROOT_RELATIVE_TO_PROJECT)/lib/stm32f4-discovery
+STM_COMMON_SRC_DIR=$(STM_LIB_DIR)/Libraries/CMSIS/ST/STM32F4xx/Source/Templates
+
+
+SRC+=$(STM_COMMON_SRC_DIR)/TrueSTUDIO/startup_stm32f4xx.s
+ifneq ($(PROJECT_SYSTEM_STM32F4XX), true)
+	SRC+=$(STM_COMMON_SRC_DIR)/system_stm32f4xx.c
+endif
+
+CC=arm-none-eabi-gcc
+OBJCOPY=arm-none-eabi-objcopy
+
+CFLAGS = -T$(WORKSPACE_ROOT_RELATIVE_TO_PROJECT)/stm32_flash.ld
+CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
+CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS += -ggdb
+CFLAGS += -O0
+CFLAGS += -Wall -Wextra -Warray-bounds
+
+CFLAGS += -DUSE_OTG_FS_CORE -DUSE_USB_OTG_FS
+#CFLAGS += -DUSE_OTG_HS_CORE -DUSE_USB_OTG_HS
+CFLAGS += -DUSE_STDPERIPH_DRIVER
+
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/CMSIS/Include
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/CMSIS/ST/STM32F4xx/Include
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/inc
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/STM32_USB_OTG_Driver/inc
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/STM32_USB_Device_Library/Core/inc
+CFLAGS += -I$(STM_LIB_DIR)/Libraries/STM32_USB_Device_Library/Class/hid/inc
+CFLAGS += -I$(STM_LIB_DIR)/Utilities/STM32F4-Discovery
+CFLAGS += -I.
+
+vpath %.c $(STM_LIB_DIR)/Libraries/STM32F4xx_StdPeriph_Driver/src \
+          $(STM_LIB_DIR)/Utilities/STM32F4-Discovery \
+          $(STM_LIB_DIR)/Libraries/STM32_USB_Device_Library/Core/src \
+          $(STM_LIB_DIR)/Libraries/STM32_USB_Device_Library/Class/hid/src \
+          $(STM_LIB_DIR)/Libraries/STM32_USB_OTG_Driver/src
+
+
+$(NAME).elf: $(SRC)
+	$(CC) $(CFLAGS) $^ -o $@
+	$(OBJCOPY) -O ihex $@ $(NAME).hex
+	$(OBJCOPY) -O binary $@ $(NAME).bin
+
+clean:
+	rm -f *.o $(NAME).elf $(NAME).hex $(NAME).bin
+
+burn:
+	st-flash write $(NAME).bin 0x8000000
+
